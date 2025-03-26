@@ -4,6 +4,7 @@
 #include "input.h"
 #include "logger.h"
 #include "environment.h"
+#include <whb/proc.h>
 
 #include <coreinit/screen.h>
 #include <coreinit/exit.h>
