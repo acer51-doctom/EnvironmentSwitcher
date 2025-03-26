@@ -5,26 +5,26 @@
 #include <stdbool.h>
 
 /**
- * Initializes the VPAD input system.
+ * Initialize VPAD and KPAD input systems.
  */
 void input_init();
 
 /**
- * Scans for new input from the GamePad.
+ * Poll input from GamePad and supported controllers (Wiimote/Pro/Classic).
  */
 void input_scan();
 
 /**
- * Returns true if the given button was just pressed.
+ * Return true if the given button was just pressed on any controller.
  */
 bool input_pressed(uint32_t button);
 
 /**
- * Button constants (VPAD_BUTTON_*)
+ * Unified button constants (VPAD & KPAD-compatible).
  */
-#define BTN_A     VPAD_BUTTON_A
-#define BTN_B     VPAD_BUTTON_B
-#define BTN_UP    VPAD_BUTTON_UP
-#define BTN_DOWN  VPAD_BUTTON_DOWN
-#define BTN_HOME  VPAD_BUTTON_HOME
-#define BTN_PLUS  VPAD_BUTTON_PLUS
+#define BTN_A     0x00000400
+#define BTN_B     0x00000200
+#define BTN_UP    0x00000008
+#define BTN_DOWN  0x00000004
+#define BTN_HOME  0x00000800
+#define BTN_PLUS  0x00001000
