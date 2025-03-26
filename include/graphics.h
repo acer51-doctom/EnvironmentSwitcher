@@ -5,32 +5,32 @@
 #include <wut.h>
 
 /**
- * Initializes the graphics system.
+ * Initialize WHB screen rendering.
+ * Must be called before any draw functions.
  */
 void gfx_init();
 
 /**
- * Clears the screen to black.
+ * Clear the screen to black.
  */
 void gfx_clear();
 
 /**
- * Renders a line of text at the given row (Y index), monospaced.
- * Automatically calculates Y position based on row number.
+ * Draw a single line of text on screen at the given row (monospaced layout).
  */
 void gfx_draw_text(int row, const char *text);
 
 /**
- * Draws the welcome screen message.
+ * Show the initial welcome screen message.
  */
 void gfx_draw_welcome();
 
 /**
- * Draws the environment list with the selector.
+ * Render a list of environments with a selector arrow (-->) at the current index.
  */
 void gfx_draw_env_list(Environment *envs, int env_count, int selected_index);
 
 /**
- * Flushes and displays everything drawn.
+ * Present everything drawn to the display (flip buffer).
  */
 void gfx_present();
