@@ -3,7 +3,7 @@ TARGET     := environmentswitcher
 BUILD      := build
 SOURCE     := source
 INCLUDE    := include
-APPDIR     := wiiu/apps/$(TARGET)
+OUTDIR     := $(BUILD)/building
 
 PREFIX     := /opt/devkitpro/devkitPPC/bin/powerpc-eabi-
 CC         := $(PREFIX)gcc
@@ -30,10 +30,10 @@ $(TARGET).rpx: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 install:
-	mkdir -p $(APPDIR)
-	cp $(TARGET).rpx $(APPDIR)/
-	cp meta.xml $(APPDIR)/ || true
-	cp icon.png $(APPDIR)/ || true
+	mkdir -p $(OUTDIR)
+	cp $(TARGET).rpx $(OUTDIR)/
+	cp meta.xml $(OUTDIR)/ || true
+	cp icon.png $(OUTDIR)/ || true
 
 clean:
-	rm -rf $(BUILD) *.rpx $(APPDIR)
+	rm -rf $(BUILD) *.rpx
