@@ -14,25 +14,24 @@ typedef struct {
 } Environment;
 
 /**
- * Scan for available environments in /fs/vol/external01/wiiu/environments/
+ * Scan for environments in /wiiu/environments/
+ * Fills the envs array up to max_envs.
  */
 int scan_environments(Environment *envs, int max_envs);
 
 /**
- * Write to a .tmp file (safe version).
- * Example: write_cfg_temp("path/file.cfg", "content");
+ * Write to a .tmp file (safe operation).
+ * Example: write_cfg_temp("/path/to/file.cfg", "envName");
  */
 bool write_cfg_temp(const char *path, const char *content);
 
 /**
- * Commit a .tmp file to its final destination.
- * Example: commit_cfg("path/file.cfg");
+ * Rename the .tmp file to its final path (commit the change).
  */
 bool commit_cfg(const char *path);
 
 /**
- * Delete the .tmp version of a file.
- * Example: discard_cfg("path/file.cfg");
+ * Delete the .tmp file if the user cancels (revert).
  */
 bool discard_cfg(const char *path);
 
@@ -42,6 +41,6 @@ bool discard_cfg(const char *path);
 bool file_exists(const char *path);
 
 /**
- * Create directory (recursively) if it doesn’t exist.
+ * Create a directory if it doesn't already exist.
  */
 bool create_directory_if_missing(const char *path);
