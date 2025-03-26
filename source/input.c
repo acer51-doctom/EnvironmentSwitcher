@@ -1,7 +1,7 @@
 // source/input.c
 #include "input.h"
 #include <vpad/input.h>
-#include <kpad/kpad.h>
+#include "kpad.h"
 
 static VPADStatus vpad_data;
 static uint32_t prev_buttons = 0;
