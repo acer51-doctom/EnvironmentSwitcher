@@ -1,30 +1,28 @@
 // source/graphics.c
 #include "graphics.h"
 #include "environment.h"
-#include <coreinit/screen.h>
+#include <whb/screen.h>
 #include <stdio.h>
 #include <string.h>
 
 #define MAX_ROW_LENGTH 100
-#define BASE_Y 40
-#define LINE_HEIGHT 24
-#define SCREEN_ID SCREEN_TV
+#define BASE_Y 40.0f
+#define LINE_HEIGHT 24.0f
+#define TEXT_X 30.0f
 
 void gfx_init() {
-    OSScreenInit();
-    OSScreenSetBufferEx(SCREEN_TV, (void *)0xF4000000);
-    OSScreenEnableEx(SCREEN_TV, true);
+    WHBScreenInit();
+    WHBScreenSetFontSize(20.0f);
 }
 
 void gfx_clear() {
-    OSScreenClearBufferEx(SCREEN_ID, 0);  // 0 = black
+    WHBScreenClear();
 }
 
 void gfx_draw_text(int row, const char *text) {
     if (!text) return;
-
-    int y = BASE_Y + row * LINE_HEIGHT;
-    OSScreenPutFontEx(SCREEN_ID, 0, y, text);
+    float y = BASE_Y + row * LINE_HEIGHT;
+    WHBScreenPrint(TEXT_X, y, text);
 }
 
 void gfx_draw_welcome() {
@@ -48,12 +46,12 @@ void gfx_draw_env_list(Environment *envs, int env_count, int selected_index) {
                  envs[i].name,
                  descriptor);
 
-        gfx_draw_text(i + 2, line); // +2 to leave space at top
+        gfx_draw_text(i + 2, line);
     }
 
     gfx_present();
 }
 
 void gfx_present() {
-    OSScreenFlipBuffersEx(SCREEN_ID);
+    WHBScreenFlip();
 }
