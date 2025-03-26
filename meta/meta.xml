@@ -10,7 +10,7 @@
     - Brick-safe .cfg handling with rollback
     - Full logging to SD card
     - UI styled after TCPGecko (my favorite app :3)
-    - Wii U GamePad ONLY!!! (no wiimotes sadly, didn't get that ready yet)
+    - All controllers supported!
     - Auto reboots
   </long_description>
 </app>
