@@ -10,7 +10,7 @@ bool is_base_environment(const char *name) {
 
 const char* get_environment_descriptor(const Environment *env) {
     if (!env || !env->is_valid || is_base_environment(env->name)) {
-        return ""; // Skip label for "aroma" or "tiramisu"
+        return ""; // No tag if it's "aroma" or "tiramisu"
     }
 
     if (env->is_aroma) {
