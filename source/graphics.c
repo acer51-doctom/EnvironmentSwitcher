@@ -1,7 +1,7 @@
 // source/graphics.c
 #include "graphics.h"
 #include "environment.h"
-#include <whb/screen.h>
+#include "screen.h"
 #include <stdio.h>
 #include <string.h>
 
