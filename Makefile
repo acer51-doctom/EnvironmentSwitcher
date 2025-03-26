@@ -3,7 +3,8 @@ TARGET     := environmentswitcher
 BUILD      := build
 SOURCE     := source
 INCLUDE    := include
-OUTDIR     := $(BUILD)/building
+OUTDIR     := building
+METADIR    := meta
 
 PREFIX     := /opt/devkitpro/devkitPPC/bin/powerpc-eabi-
 CC         := $(PREFIX)gcc
@@ -18,22 +19,15 @@ OBJS       := $(patsubst $(SOURCE)/%.c,$(BUILD)/%.o,$(SRCS))
 
 .PHONY: all clean install
 
-all: $(BUILD) $(TARGET).rpx install
+all: $(BUILD) $(OUTDIR) $(OUTDIR)/$(TARGET).rpx install
 
 $(BUILD):
+	mkdir -p $@
+
+$(OUTDIR):
 	mkdir -p $@
 
 $(BUILD)/%.o: $(SOURCE)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(TARGET).rpx: $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-
-install:
-	mkdir -p $(OUTDIR)
-	cp $(TARGET).rpx $(OUTDIR)/
-	cp meta.xml $(OUTDIR)/ || true
-	cp icon.png $(OUTDIR)/ || true
-
-clean:
-	rm -rf $(BUILD) *.rpx
+$(OUTDIR)/$(TARGET).rpx: $(OBJS)
