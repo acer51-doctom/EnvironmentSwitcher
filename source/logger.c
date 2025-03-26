@@ -15,9 +15,8 @@ bool logger_init() {
     create_directory_if_missing("/fs/vol/external01/wiiu/environmentswitcher");
     create_directory_if_missing(log_base);
 
-    // Use ticks as unique timestamp fallback
+    // Use ticks to make a unique filename
     OSTime ticks = OSGetTime();
-
     char path[MAX_LOG_PATH];
     snprintf(path, sizeof(path), "%s/log_%llu.txt", log_base, ticks);
 
@@ -29,13 +28,13 @@ void logger_log(const char *tag, const char *message) {
     char line[MAX_LOG_LINE];
     snprintf(line, sizeof(line), "**[%s]** %s\n", tag, message);
 
-    // Write to file
+    // Log to file
     if (log_file) {
         fputs(line, log_file);
         fflush(log_file);
     }
 
-    // Print to screen (debug output)
+    // Debug output
     OSReport("%s", line);
 }
 
