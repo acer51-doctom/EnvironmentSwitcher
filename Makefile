@@ -1,4 +1,4 @@
-# EnvironmentSwitcher - WHB-enabled Wii U homebrew
+# EnvironmentSwitcher - Clean output to /building/
 TARGET     := environmentswitcher
 BUILD      := build
 SOURCE     := source
@@ -17,9 +17,9 @@ LDFLAGS    := -L/opt/devkitpro/wut/lib -lwut
 SRCS       := $(wildcard $(SOURCE)/*.c)
 OBJS       := $(patsubst $(SOURCE)/%.c,$(BUILD)/%.o,$(SRCS))
 
-.PHONY: all clean install
+.PHONY: all clean
 
-all: $(BUILD) $(OUTDIR) $(OUTDIR)/$(TARGET).rpx install
+all: $(OUTDIR)/$(TARGET).rpx
 
 $(BUILD):
 	mkdir -p $@
@@ -27,7 +27,13 @@ $(BUILD):
 $(OUTDIR):
 	mkdir -p $@
 
-$(BUILD)/%.o: $(SOURCE)/%.c
+$(BUILD)/%.o: $(SOURCE)/%.c | $(BUILD)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(OUTDIR)/$(TARGET).rpx: $(OBJS)
+$(OUTDIR)/$(TARGET).rpx: $(OBJS) | $(OUTDIR)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	cp $(METADIR)/meta.xml $(OUTDIR)/ || true
+	cp icon.png $(OUTDIR)/ || true
+
+clean:
+	rm -rf $(BUILD) $(OUTDIR) *.rpx
