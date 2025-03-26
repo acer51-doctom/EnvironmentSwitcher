@@ -4,7 +4,6 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
-#include <coreinit/memdefaultheap.h>
 #include <coreinit/time.h>
 
 #define SD_ROOT "/fs/vol/external01"
@@ -26,7 +25,7 @@ bool create_directory_if_missing(const char *path) {
     return mkdir(path, 0777) == 0;
 }
 
-bool write_cfg_file_safe(const char *path, const char *content) {
+bool write_cfg_temp(const char *path, const char *content) {
     char tmp_path[512];
     snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", path);
 
@@ -35,9 +34,27 @@ bool write_cfg_file_safe(const char *path, const char *content) {
 
     fwrite(content, 1, strlen(content), f);
     fclose(f);
+    return true;
+}
 
-    // Rename over original
+bool commit_cfg(const char *path) {
+    char tmp_path[512];
+    snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", path);
+
+    if (!file_exists(tmp_path)) return false;
+
+    remove(path); // In case it exists
     return rename(tmp_path, path) == 0;
+}
+
+bool discard_cfg(const char *path) {
+    char tmp_path[512];
+    snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", path);
+
+    if (file_exists(tmp_path)) {
+        return remove(tmp_path) == 0;
+    }
+    return true; // Nothing to remove = already safe
 }
 
 int scan_environments(Environment *envs, int max_envs) {
@@ -72,7 +89,6 @@ int scan_environments(Environment *envs, int max_envs) {
             struct dirent *plugin_entry;
             while ((plugin_entry = readdir(plugin_dir))) {
                 if (strstr(plugin_entry->d_name, ".wps")) {
-                    // Found a .wps file
                     char config_path[512];
                     snprintf(config_path, sizeof(config_path), "%s/config", plugin_path);
                     struct stat st;
