@@ -9,18 +9,18 @@
 #define MAX_LOG_PATH 512
 
 /**
- * Initialize logging system.
- * Opens the log file and creates necessary directories.
+ * Initialize the logging system.
+ * Creates log directory + opens a new log file with timestamp.
  */
 bool logger_init();
 
 /**
- * Log a line to screen and file.
- * Format: "**[TAG]** Message"
+ * Log a line to both screen and file.
+ * Auto-formats as: **[TAG]** message
  */
 void logger_log(const char *tag, const char *message);
 
 /**
- * Closes the current log file.
+ * Close the log file cleanly.
  */
 void logger_close();
