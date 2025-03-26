@@ -9,32 +9,52 @@
 #include <coreinit/exit.h>
 #include <vpad/input.h>
 #include <string.h>
-#include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 #define MAX_ENV 100
 
-static void wait_for_exit() {
+static char default_cfg_path[512];
+static char autoboot_cfg_path[512];
+
+static void wait_for_exit(bool confirmed) {
+    if (!confirmed) {
+        discard_cfg(default_cfg_path);
+        discard_cfg(autoboot_cfg_path);
+        logger_log("INFO", "Changes cancelled. Temp files discarded.");
+        gfx_clear();
+        gfx_draw_text(3, "Cancelled. No changes were made.");
+        gfx_present();
+        sleep(2);
+        return;
+    }
+
     logger_log("INFO", "Waiting 10 seconds...");
     logger_log("INFO", "Press A to reboot now or B to cancel.");
-    
-    int ticks = 1000; // Approx 10 sec if ~10ms per iteration
 
-    while (ticks-- > 0) {
+    for (int ticks = 1000; ticks > 0; --ticks) {
         input_scan();
         if (input_pressed(BTN_A)) {
             logger_log("INFO", "Rebooting immediately...");
+            commit_cfg(default_cfg_path);
+            commit_cfg(autoboot_cfg_path);
             WHBProcShutdown();
         } else if (input_pressed(BTN_B)) {
-            logger_log("INFO", "Cancelled by user.");
+            discard_cfg(default_cfg_path);
+            discard_cfg(autoboot_cfg_path);
+            logger_log("INFO", "Cancelled by user. Temp files deleted.");
+            gfx_clear();
+            gfx_draw_text(3, "Cancelled. No changes were made.");
+            gfx_present();
+            sleep(2);
             return;
         }
         usleep(10000);
     }
 
-    logger_log("INFO", "Auto-rebooting after delay...");
+    logger_log("INFO", "Rebooting after timeout.");
+    commit_cfg(default_cfg_path);
+    commit_cfg(autoboot_cfg_path);
     WHBProcShutdown();
 }
 
@@ -71,31 +91,31 @@ int main(int argc, char **argv) {
         } else if (input_pressed(BTN_UP)) {
             selected = (selected - 1 + env_count) % env_count;
         } else if (input_pressed(BTN_A)) {
-            // Start verbose log
             gfx_clear();
-            char msg[128];
-            snprintf(msg, sizeof(msg), "Selected environment: %s", environments[selected].name);
-            logger_log("INFO", msg);
+            gfx_draw_text(2, "Preparing environment switch...");
+            gfx_present();
 
-            // Write default.cfg
             const char *env_name = environments[selected].name;
-            char def_cfg[512];
-            snprintf(def_cfg, sizeof(def_cfg), "/fs/vol/external01/wiiu/environments/default.cfg");
 
-            if (write_cfg_file_safe(def_cfg, env_name)) {
-                logger_log("INFO", "Modified default.cfg file...");
-            } else {
-                logger_log("ERROR", "Failed to write default.cfg");
-            }
+            // Build paths
+            snprintf(default_cfg_path, sizeof(default_cfg_path),
+                "/fs/vol/external01/wiiu/environments/default.cfg");
 
-            // Write autoboot.cfg
-            char auto_path[512];
-            snprintf(auto_path, sizeof(auto_path),
+            snprintf(autoboot_cfg_path, sizeof(autoboot_cfg_path),
                 "/fs/vol/external01/wiiu/environments/%s/autoboot.cfg", env_name);
 
+            // Write .tmp config files
+            write_cfg_temp(default_cfg_path, env_name);
+            logger_log("INFO", "Staged default.cfg");
+
             if (environments[selected].is_aroma) {
-                write_cfg_file_safe(auto_path, "wiiu_menu");
-                logger_log("INFO", "Set autoboot to wiiu_menu for Aroma.");
+                write_cfg_temp(autoboot_cfg_path, "wiiu_menu");
+                logger_log("INFO", "Staged autoboot.cfg for Aroma.");
+                gfx_draw_text(4, "Autoboot set to Wii U Menu.");
+                gfx_present();
+                sleep(2);
+                wait_for_exit(true);
+                running = false;
             } else {
                 // Tiramisu prompt
                 gfx_clear();
@@ -109,25 +129,24 @@ int main(int argc, char **argv) {
                 while (!decided) {
                     input_scan();
                     if (input_pressed(BTN_A)) {
-                        write_cfg_file_safe(auto_path, "homebrew_launcher");
-                        logger_log("INFO", "Set autoboot to homebrew_launcher for Tiramisu.");
+                        write_cfg_temp(autoboot_cfg_path, "homebrew_launcher");
+                        logger_log("INFO", "Staged autoboot.cfg for Tiramisu: HBL.");
                         decided = true;
                     } else if (input_pressed(BTN_B)) {
-                        write_cfg_file_safe(auto_path, "wiiu_menu");
-                        logger_log("INFO", "Set autoboot to wiiu_menu for Tiramisu.");
+                        write_cfg_temp(autoboot_cfg_path, "wiiu_menu");
+                        logger_log("INFO", "Staged autoboot.cfg for Tiramisu: Wii U Menu.");
                         decided = true;
                     }
                 }
+
+                gfx_clear();
+                gfx_draw_text(3, "Environment ready to apply.");
+                gfx_draw_text(4, "Press A to reboot, B to cancel.");
+                gfx_present();
+
+                wait_for_exit(true);
+                running = false;
             }
-
-            logger_log("SUCCESS", "Environment switch complete.");
-            gfx_clear();
-            gfx_draw_text(3, "Environment switched successfully.");
-            gfx_draw_text(4, "Press A to reboot, B to cancel.");
-            gfx_present();
-
-            wait_for_exit();
-            running = false;
         } else if (input_pressed(BTN_HOME)) {
             running = false;
         }
