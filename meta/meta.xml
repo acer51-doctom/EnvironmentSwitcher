@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<app type="wiiu">
+  <name>EnvironmentSwitcher</name>
+  <version>1.0</version>
+  <author>Acer_51</author>
+  <short_description>Switch between any environments safely.</short_description>
+  <long_description>
+    A Wii U homebrew utility for switching environments:
+    - Supports Aroma, Tiramisu, and CBHC/Legacy
+    - Brick-safe .cfg handling with rollback
+    - Full logging to SD card
+    - UI styled after TCPGecko (my favorite app :3)
+    - Wii U GamePad ONLY!!! (no wiimotes sadly, didn't get that ready yet)
+    - Auto reboots
+  </long_description>
+</app>
