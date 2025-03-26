@@ -1,8 +1,9 @@
+# EnvironmentSwitcher - WHB-enabled Wii U homebrew
 TARGET     := environmentswitcher
 BUILD      := build
 SOURCE     := source
 INCLUDE    := include
-META       := meta
+APPDIR     := wiiu/apps/$(TARGET)
 
 PREFIX     := /opt/devkitpro/devkitPPC/bin/powerpc-eabi-
 CC         := $(PREFIX)gcc
@@ -15,9 +16,9 @@ LDFLAGS    := -L/opt/devkitpro/wut/lib -lwut
 SRCS       := $(wildcard $(SOURCE)/*.c)
 OBJS       := $(patsubst $(SOURCE)/%.c,$(BUILD)/%.o,$(SRCS))
 
-.PHONY: all clean
+.PHONY: all clean install
 
-all: $(BUILD) $(TARGET).rpx
+all: $(BUILD) $(TARGET).rpx install
 
 $(BUILD):
 	mkdir -p $@
@@ -27,8 +28,12 @@ $(BUILD)/%.o: $(SOURCE)/%.c
 
 $(TARGET).rpx: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-	mkdir -p $(TARGET)/meta
-	cp -r $(META)/* $(TARGET)/meta/
+
+install:
+	mkdir -p $(APPDIR)
+	cp $(TARGET).rpx $(APPDIR)/
+	cp meta.xml $(APPDIR)/ || true
+	cp icon.png $(APPDIR)/ || true
 
 clean:
-	rm -rf $(BUILD) *.rpx $(TARGET)
+	rm -rf $(BUILD) *.rpx $(APPDIR)
