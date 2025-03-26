@@ -4,13 +4,11 @@
 #include "input.h"
 #include "logger.h"
 #include "environment.h"
+#include "screen.h"  // Your custom WHB-style screen wrapper
 #include <whb/proc.h>
 
-#include <coreinit/screen.h>
-#include <coreinit/exit.h>
-#include <vpad/input.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #define MAX_ENV 100
@@ -22,7 +20,7 @@ static void wait_for_exit(bool confirmed) {
     if (!confirmed) {
         discard_cfg(default_cfg_path);
         discard_cfg(autoboot_cfg_path);
-        logger_log("INFO", "Changes cancelled. Temp files discarded.");
+        logger_log("INFO", "User cancelled. Temporary files discarded.");
         gfx_clear();
         gfx_draw_text(3, "Cancelled. No changes were made.");
         gfx_present();
@@ -33,7 +31,7 @@ static void wait_for_exit(bool confirmed) {
     logger_log("INFO", "Waiting 10 seconds...");
     logger_log("INFO", "Press A to reboot now or B to cancel.");
 
-    for (int ticks = 1000; ticks > 0; --ticks) {
+    for (int i = 0; i < 1000; ++i) {
         input_scan();
         if (input_pressed(BTN_A)) {
             logger_log("INFO", "Rebooting immediately...");
@@ -43,7 +41,7 @@ static void wait_for_exit(bool confirmed) {
         } else if (input_pressed(BTN_B)) {
             discard_cfg(default_cfg_path);
             discard_cfg(autoboot_cfg_path);
-            logger_log("INFO", "Cancelled by user. Temp files deleted.");
+            logger_log("INFO", "User cancelled during reboot timer.");
             gfx_clear();
             gfx_draw_text(3, "Cancelled. No changes were made.");
             gfx_present();
@@ -64,6 +62,10 @@ int main(int argc, char **argv) {
     input_init();
     logger_init();
 
+    create_directory_if_missing("/fs/vol/external01/wiiu/environments");
+    create_directory_if_missing("/fs/vol/external01/wiiu/environmentswitcher");
+    create_directory_if_missing("/fs/vol/external01/wiiu/environmentswitcher/logs");
+
     gfx_draw_welcome();
     sleep(2);
 
@@ -72,7 +74,7 @@ int main(int argc, char **argv) {
 
     if (env_count == 0) {
         gfx_clear();
-        gfx_draw_text(2, "No valid environments found.");
+        gfx_draw_text(2, "No environments found.");
         logger_log("ERROR", "No valid environments found.");
         gfx_present();
         sleep(3);
@@ -98,14 +100,18 @@ int main(int argc, char **argv) {
 
             const char *env_name = environments[selected].name;
 
-            // Build paths
             snprintf(default_cfg_path, sizeof(default_cfg_path),
                 "/fs/vol/external01/wiiu/environments/default.cfg");
 
             snprintf(autoboot_cfg_path, sizeof(autoboot_cfg_path),
                 "/fs/vol/external01/wiiu/environments/%s/autoboot.cfg", env_name);
 
-            // Write .tmp config files
+            // Make sure environment dir exists
+            char env_dir[512];
+            snprintf(env_dir, sizeof(env_dir),
+                "/fs/vol/external01/wiiu/environments/%s", env_name);
+            create_directory_if_missing(env_dir);
+
             write_cfg_temp(default_cfg_path, env_name);
             logger_log("INFO", "Staged default.cfg");
 
@@ -118,12 +124,11 @@ int main(int argc, char **argv) {
                 wait_for_exit(true);
                 running = false;
             } else {
-                // Tiramisu prompt
                 gfx_clear();
                 gfx_draw_text(2, "Where do you want to boot?");
                 gfx_draw_text(3, "- Press A for Homebrew Launcher");
                 gfx_draw_text(4, "- Press B for Wii U Menu");
-                gfx_draw_text(5, "(Hold + when selected to see this menu again)");
+                gfx_draw_text(5, "(Hold + when selecting to show this menu)");
                 gfx_present();
 
                 bool decided = false;
@@ -131,17 +136,17 @@ int main(int argc, char **argv) {
                     input_scan();
                     if (input_pressed(BTN_A)) {
                         write_cfg_temp(autoboot_cfg_path, "homebrew_launcher");
-                        logger_log("INFO", "Staged autoboot.cfg for Tiramisu: HBL.");
+                        logger_log("INFO", "Staged autoboot.cfg to homebrew_launcher.");
                         decided = true;
                     } else if (input_pressed(BTN_B)) {
                         write_cfg_temp(autoboot_cfg_path, "wiiu_menu");
-                        logger_log("INFO", "Staged autoboot.cfg for Tiramisu: Wii U Menu.");
+                        logger_log("INFO", "Staged autoboot.cfg to wiiu_menu.");
                         decided = true;
                     }
                 }
 
                 gfx_clear();
-                gfx_draw_text(3, "Environment ready to apply.");
+                gfx_draw_text(3, "Ready to switch environment.");
                 gfx_draw_text(4, "Press A to reboot, B to cancel.");
                 gfx_present();
 
