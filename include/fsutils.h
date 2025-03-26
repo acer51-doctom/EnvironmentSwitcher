@@ -15,15 +15,26 @@ typedef struct {
 
 /**
  * Scan for available environments in /fs/vol/external01/wiiu/environments/
- * Populates the provided array with up to max_envs entries.
- * Returns the number of environments found.
  */
 int scan_environments(Environment *envs, int max_envs);
 
 /**
- * Write content to a file safely (temporary -> replace).
+ * Write to a .tmp file (safe version).
+ * Example: write_cfg_temp("path/file.cfg", "content");
  */
-bool write_cfg_file_safe(const char *path, const char *content);
+bool write_cfg_temp(const char *path, const char *content);
+
+/**
+ * Commit a .tmp file to its final destination.
+ * Example: commit_cfg("path/file.cfg");
+ */
+bool commit_cfg(const char *path);
+
+/**
+ * Delete the .tmp version of a file.
+ * Example: discard_cfg("path/file.cfg");
+ */
+bool discard_cfg(const char *path);
 
 /**
  * Check if a file exists.
