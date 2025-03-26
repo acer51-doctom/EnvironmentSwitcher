@@ -4,7 +4,6 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
-#include <coreinit/time.h>
 
 #define SD_ROOT "/fs/vol/external01"
 
@@ -20,7 +19,7 @@ bool file_exists(const char *path) {
 bool create_directory_if_missing(const char *path) {
     struct stat st;
     if (stat(path, &st) == 0 && S_ISDIR(st.st_mode)) {
-        return true; // already exists
+        return true;
     }
     return mkdir(path, 0777) == 0;
 }
@@ -43,7 +42,7 @@ bool commit_cfg(const char *path) {
 
     if (!file_exists(tmp_path)) return false;
 
-    remove(path); // In case it exists
+    remove(path); // remove existing file, if any
     return rename(tmp_path, path) == 0;
 }
 
@@ -54,7 +53,7 @@ bool discard_cfg(const char *path) {
     if (file_exists(tmp_path)) {
         return remove(tmp_path) == 0;
     }
-    return true; // Nothing to remove = already safe
+    return true;
 }
 
 int scan_environments(Environment *envs, int max_envs) {
@@ -70,7 +69,6 @@ int scan_environments(Environment *envs, int max_envs) {
         if (entry->d_type != DT_DIR)
             continue;
 
-        // Skip special and invalid folders
         if (strcmp(entry->d_name, ".") == 0 ||
             strcmp(entry->d_name, "..") == 0 ||
             strcasecmp(entry->d_name, "installer") == 0)
@@ -80,7 +78,7 @@ int scan_environments(Environment *envs, int max_envs) {
         memset(env, 0, sizeof(Environment));
         strncpy(env->name, entry->d_name, MAX_NAME_LENGTH - 1);
 
-        // Check if it's Aroma-based
+        // Detect Aroma via /plugins folder with .wps and /config
         char plugin_path[512];
         snprintf(plugin_path, sizeof(plugin_path), "%s/%s/plugins", base_path, env->name);
 
