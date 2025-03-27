@@ -1,2 +1,2 @@
 # EnvironmentSwitcher
-EnvironmentSwitcer
+EnvironmentSwitcher
