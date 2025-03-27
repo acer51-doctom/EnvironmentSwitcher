@@ -20,7 +20,7 @@ static inline void WHBScreenInit(void) {
     OSScreenInit();
 
     uint32_t bufferSize = OSScreenGetBufferSizeEx(SCREEN_TV);
-    screenBuffer = MEM1AllocFromDefaultHeapEx(bufferSize, 0x100);
+    screenBuffer = MEMAllocFromDefaultHeapEx(bufferSize, 0x100);  // ✅ fixed
 
     if (screenBuffer) {
         OSScreenSetBufferEx(SCREEN_TV, screenBuffer);
@@ -46,7 +46,7 @@ static inline void WHBScreenFlip(void) {
  * Set the font size for drawing (used by WHB-style API only).
  */
 static inline void WHBScreenSetFontSize(float size) {
-    __fontSize = size; // Stored, not used by OSScreen directly
+    __fontSize = size;
 }
 
 /**
@@ -58,11 +58,11 @@ static inline void WHBScreenPrint(float x, float y, const char *text) {
 }
 
 /**
- * Shuts down and frees the buffer.
+ * Frees the screen buffer.
  */
 static inline void WHBScreenShutdown(void) {
     if (screenBuffer) {
-        MEM1FreeToDefaultHeap(screenBuffer);
+        MEMFreeToDefaultHeap(screenBuffer);  // ✅ fixed
         screenBuffer = NULL;
     }
 }
